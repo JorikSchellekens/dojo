@@ -4,7 +4,9 @@ export enum WorldEntryPoints {
     entities = "entities",
     execute = "execute",
     register_system = "register_system",
-    register_component = "register_component"
+    register_component = "register_component",
+    component = "component",
+    system = "system"
 }
 
 export interface Query {

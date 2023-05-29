@@ -3,6 +3,8 @@ import { Call } from "starknet";
 import { Provider } from "./provider";
 import { Query, WorldEntryPoints } from "../types";
 
+import { strToShortStringFelt } from '../utils'
+
 export class RPCProvider extends Provider {
     public provider: RpcProvider;
     public sequencerProvider: StarknetProvider;
@@ -33,7 +35,15 @@ export class RPCProvider extends Provider {
         const call: Call = {
             entrypoint: WorldEntryPoints.get, // "entity"
             contractAddress: this.getWorldAddress(),
-            calldata: [component, query.address_domain, query.partition, ...query.keys, offset, length]
+            calldata: [
+                strToShortStringFelt(component),
+                query.address_domain,
+                query.partition,
+                query.keys.length,
+                ...query.keys,
+                query.hash,
+                offset,
+                length]
         }
 
         console.log(call)
@@ -54,7 +64,7 @@ export class RPCProvider extends Provider {
         const call: Call = {
             entrypoint: WorldEntryPoints.entities,
             contractAddress: this.getWorldAddress(),
-            calldata: [component, partition]
+            calldata: [strToShortStringFelt(component), partition]
         }
 
         console.log(call)
@@ -70,6 +80,27 @@ export class RPCProvider extends Provider {
         }
     }
 
+    public async component(name: string): Promise<bigint> {
+
+        const call: Call = {
+            entrypoint: WorldEntryPoints.component,
+            contractAddress: this.getWorldAddress(),
+            calldata: [strToShortStringFelt(name)]
+        }
+
+        console.log(call)
+
+        try {
+            const response = await this.sequencerProvider.callContract(call);
+
+            console.log("response", response)
+
+            return response.result as unknown as bigint;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     public async execute(account: Account, system: string, call_data: number.BigNumberish[]): Promise<Array<bigint>> {
 
         let call_data_obj = call_data.reduce((obj: any, item, index) => {
@@ -77,6 +108,7 @@ export class RPCProvider extends Provider {
             return obj;
         }, {});
 
+        console.log(call_data)
 
         try {
             const nonce = await account?.getNonce()
@@ -85,7 +117,7 @@ export class RPCProvider extends Provider {
                     contractAddress: this.getWorldAddress() || "",
                     entrypoint: WorldEntryPoints.execute,
                     calldata: stark.compileCalldata({
-                        system,
+                        name: strToShortStringFelt(system),
                         ...call_data_obj
                     })
                 },
