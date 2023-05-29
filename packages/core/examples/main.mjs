@@ -30,11 +30,11 @@ const main = async () => {
 
     const account = new HotAccount(rpcProvider.sequencerProvider, address, privateKey)
 
-    const keys = [BigInt(address), BigInt(address)]
+    const keys = [BigInt(address)]
 
     const pos = microstarknet.poseidonHashMany(keys)
 
-    const query = { address_domain: 0, partition: 0, keys: keys, hash: 0 };
+    const query = { address_domain: 0, partition: BigInt(address), keys: keys, hash: pos  };
     const offset = 0;
     const length = 0;
 

@@ -36,6 +36,8 @@ export class RPCProvider extends Provider {
             calldata: [component, query.address_domain, query.partition, ...query.keys, offset, length]
         }
 
+        console.log(call)
+
         try {
             const response = await this.sequencerProvider.callContract(call);
 
