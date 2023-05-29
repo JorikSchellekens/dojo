@@ -12,8 +12,7 @@ export enum WorldEntryPoints {
 export interface Query {
     address_domain: string,
     partition: string,
-    keys: string[]
-    hash: string,
+    keys: bigint[]
 }
 
 export interface ICommands {

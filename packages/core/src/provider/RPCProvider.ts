@@ -1,9 +1,9 @@
-import { RpcProvider, Provider as StarknetProvider, Account, stark, number } from "starknet";
-import { Call } from "starknet";
+import { RpcProvider, Provider as StarknetProvider, Account, stark, number, Call } from "starknet";
 import { Provider } from "./provider";
 import { Query, WorldEntryPoints } from "../types";
-
+import * as microstarknet from 'micro-starknet';
 import { strToShortStringFelt } from '../utils'
+import BN__default from 'bn.js';
 
 export class RPCProvider extends Provider {
     public provider: RpcProvider;
@@ -32,6 +32,8 @@ export class RPCProvider extends Provider {
 
     public async entity(component: string, query: Query, offset: number, length: number): Promise<Array<bigint>> {
 
+        const poseidon: any = microstarknet.poseidonHashMany(query.keys)
+
         const call: Call = {
             entrypoint: WorldEntryPoints.get, // "entity"
             contractAddress: this.getWorldAddress(),
@@ -41,17 +43,16 @@ export class RPCProvider extends Provider {
                 query.partition,
                 query.keys.length,
                 ...query.keys,
-                query.hash,
+                poseidon,
                 offset,
-                length]
+                length
+            ]
         }
 
         console.log(call)
 
         try {
             const response = await this.sequencerProvider.callContract(call);
-
-            console.log("response", response)
 
             return response.result as unknown as Array<bigint>;
         } catch (error) {
@@ -72,8 +73,6 @@ export class RPCProvider extends Provider {
         try {
             const response = await this.sequencerProvider.callContract(call);
 
-            console.log("response", response)
-
             return response.result as unknown as Array<bigint>;
         } catch (error) {
             throw error;
@@ -88,12 +87,8 @@ export class RPCProvider extends Provider {
             calldata: [strToShortStringFelt(name)]
         }
 
-        console.log(call)
-
         try {
             const response = await this.sequencerProvider.callContract(call);
-
-            console.log("response", response)
 
             return response.result as unknown as bigint;
         } catch (error) {
@@ -107,8 +102,6 @@ export class RPCProvider extends Provider {
             obj[index] = item;
             return obj;
         }, {});
-
-        console.log(call_data)
 
         try {
             const nonce = await account?.getNonce()
@@ -127,9 +120,6 @@ export class RPCProvider extends Provider {
                     maxFee: 0 // TODO: Update
                 }
             );
-
-            console.log("response", call)
-
             return call as unknown as Array<bigint>;
         } catch (error) {
             throw error;
