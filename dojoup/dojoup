@@ -195,8 +195,11 @@ EOF
     fi
 
     # Build the repo and install the binaries locally to the .dojo bin directory.
-    # --root appends /bin to the directory it is given, so we pass DOJO_DIR.
-    ensure cargo install --path ./dojo --bin dojo --locked --force --root "$DOJO_DIR"
+    ensure cargo build --release --bin katana --bin sozo --bin torii
+
+    cp target/release/katana "$DOJO_BIN_DIR/katana"
+    cp target/release/sozo "$DOJO_BIN_DIR/sozo"
+    cp target/release/torii "$DOJO_BIN_DIR/torii"
 
     say "done"
   fi
